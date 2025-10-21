@@ -7,9 +7,10 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "*",
+        origin: "http://localhost:5173",
          methods: ["GET", "POST"],
-    }
+    },
+    maxHttpBufferSize: 10 * 1024 *  1024
 })
 
 let counter = new Map();
@@ -43,6 +44,15 @@ io.on("connection", (socket)=>{
         socket.join(roomId);
         counter.set(socket.id, 1);
         io.to(roomId).emit("join-room-notification", {message: `${socketId} joined the room ${roomId}`, count: counter.size});
+    })
+
+    socket.on("send-file", ({buffer, roomId, type})=>{
+        console.log("file sended", buffer.byteLength, " bytes");
+        socket.to(roomId).emit("receive-file",  {buffer, type: type});
+    })
+
+    socket.onAny((event, ...args)=>{
+        console.log("Event name is: ", event)
     })
 })
 
