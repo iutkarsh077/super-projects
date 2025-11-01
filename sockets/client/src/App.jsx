@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import socket from "./Sockets";
 import { useState } from "react";
 import { useRef } from "react";
+import Editor from "./components/Editor";
 
 const App = () => {
   const [socketId, setSocketId] = useState(null);
@@ -14,6 +15,7 @@ const App = () => {
   const [userCounts, setUserCounts] = useState(0);
   const [file, setFile] = useState(null);
   const [previewFiles, setPreviewFiles] = useState(null);
+  const [editorContent, setEditorContent] = useState("");
   let typingTimer = useRef();
   useEffect(() => {
     const onConnect = async () => {
@@ -23,6 +25,11 @@ const App = () => {
 
     const onDisconnect = (data) => {
       setUserCounts(data.count);
+    };
+
+    const editorTextContent = (text) => {
+      console.log(text);
+      setEditorContent(text);
     };
 
     const welcomeNotification = (data) => {
@@ -57,7 +64,7 @@ const App = () => {
       setConversation((prev) => [...prev, data]);
     };
 
-    const receiveFile = ({buffer, type }) => {
+    const receiveFile = ({ buffer, type }) => {
       const blob = new Blob([buffer], { type });
       const a = document.createElement("a");
       const url = URL.createObjectURL(blob);
@@ -66,7 +73,7 @@ const App = () => {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url)
+      URL.revokeObjectURL(url);
       // const preview = URL.createObjectURL(base64);
       // setPreviewFiles(base64)
     };
@@ -78,6 +85,7 @@ const App = () => {
     socket.on("receive-message", receiveMessage);
     socket.on("disconnect1", onDisconnect);
     socket.on("receive-file", receiveFile);
+    socket.on("editor-content-client", editorTextContent);
     return () => {
       socket.off("connect", onConnect);
       socket.off("receive-message", receiveMessage);
@@ -86,8 +94,15 @@ const App = () => {
       socket.off("typing-alert-client", typingAlertNotification);
       socket.off("disconnect1", onDisconnect);
       socket.off("receive-file", receiveFile);
+      socket.off("editor-content-client", editorTextContent);
     };
   }, []);
+
+  useEffect(() => {
+    if (roomId && editorContent) {
+      socket.emit("editor-content-server", { roomId, content: editorContent });
+    }
+  }, [editorContent]);
 
   const sendMessage = async () => {
     const data = {
@@ -122,145 +137,190 @@ const App = () => {
   };
 
   const handleSendFile = () => {
-//     if (file.size > 500 * 1024) {
-//   alert("File too large to send via socket!");
-//   return;
-// }
+    //     if (file.size > 500 * 1024) {
+    //   alert("File too large to send via socket!");
+    //   return;
+    // }
     const reader = new FileReader();
     reader.onload = (event) => {
       console.log(event.target.result);
       const buffer = event.target.result;
-      socket.emit("send-file", {buffer, type: file.type, roomId });
+      socket.emit("send-file", { buffer, type: file.type, roomId });
     };
     reader.readAsArrayBuffer(file);
   };
+
   return (
-   <div className="bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 min-h-screen flex flex-col items-center py-10 px-4">
-  {/* Header Section */}
-  <div className="text-center mb-10">
-    <p className="text-blue-400 text-2xl font-semibold">
-      Total Users: <span className="text-white">{userCounts}</span>
-    </p>
-    <h4 className="text-gray-300 text-lg font-medium mt-2">
-      Socket ID: <span className="text-yellow-400">{socketId}</span>
-    </h4>
-    <h1 className="text-green-400 text-xl font-semibold mt-3">
-      {welcomeNotification}
-    </h1>
-  </div>
-
-  {/* Notifications Section */}
-  <div className="bg-zinc-700/60 backdrop-blur-md rounded-2xl p-5 w-full max-w-3xl mb-6 shadow-lg">
-    <h2 className="text-white text-lg font-semibold mb-3 border-b border-zinc-600 pb-2">
-      Room Activity
-    </h2>
-    <div className="space-y-2">
-      {joinRoomNotification.map((item, index) => (
-        <p key={index} className="text-yellow-400 text-sm font-medium">
-          {item}
-        </p>
-      ))}
-      {typingAlert.map((item, index) => (
-        <p key={index} className="text-gray-300 text-sm font-semibold">
-          {item.message}
-        </p>
-      ))}
-    </div>
-  </div>
-
-  {/* Conversation Section */}
-  <div className="bg-zinc-700/60 backdrop-blur-md rounded-2xl p-5 w-full max-w-3xl mb-6 shadow-lg">
-    <h2 className="text-white text-lg font-semibold mb-3 border-b border-zinc-600 pb-2">
-      Conversation
-    </h2>
-    <div className="space-y-3 max-h-80 overflow-y-auto">
-      {conversation?.map((item, index) => (
-        <div
-          key={index}
-          className={`flex items-start gap-3 ${
-            item.role === "You" ? "justify-end" : "justify-start"
-          }`}
-        >
-          <span
-            className={`px-4 py-2 rounded-xl ${
-              item.role === "You"
-                ? "bg-blue-600 text-white"
-                : "bg-zinc-600 text-gray-200"
-            }`}
-          >
-            <span className="block text-sm font-semibold">{item.role}:</span>
-            <span className="block text-base">{item.message}</span>
-          </span>
+    <div className="bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 min-h-screen flex flex-col">
+      {/* Header Section */}
+      <div className="bg-zinc-800/50 backdrop-blur-md border-b border-zinc-700 px-6 py-6">
+        <div className="flex items-center justify-between gap-8">
+          <div>
+            <p className="text-blue-400 text-xl font-semibold">
+              Total Users: <span className="text-white">{userCounts}</span>
+            </p>
+            <h4 className="text-gray-300 text-sm font-medium mt-1">
+              Socket ID: <span className="text-yellow-400">{socketId}</span>
+            </h4>
+          </div>
+          <h1 className="text-green-400 text-2xl font-semibold">
+            {welcomeNotification || "Welcome to Chat"}
+          </h1>
         </div>
-      ))}
-    </div>
-  </div>
+      </div>
 
-  {/* Input Section */}
-  <div className="fixed bottom-5 left-1/2 -translate-x-1/2 w-full max-w-3xl flex flex-col gap-4 bg-zinc-800/90 p-5 rounded-2xl shadow-2xl backdrop-blur-md">
-    {/* Room Input */}
-    <div className="flex gap-3">
-      <input
-        type="text"
-        value={roomId}
-        onChange={(e) => setRoomId(e.target.value)}
-        placeholder="Enter Room ID..."
-        className="h-12 flex-1 bg-zinc-900 border border-zinc-700 text-white rounded-lg px-3 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+      {/* Main Content - Two Column Layout */}
+      <div className="flex flex-1 gap-6 p-6 overflow-hidden">
+        {/* Left Sidebar - Room Activity & File Upload */}
+        <div className="w-80 flex flex-col gap-6 overflow-y-auto">
+          {/* Room Activity Section */}
+          <div className="bg-zinc-700/60 backdrop-blur-md rounded-2xl p-5 shadow-lg flex-shrink-0">
+            <h2 className="text-white text-lg font-semibold mb-3 border-b border-zinc-600 pb-2">
+              Room Activity
+            </h2>
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {joinRoomNotification.length > 0 ? (
+                joinRoomNotification.map((item, index) => (
+                  <p
+                    key={index}
+                    className="text-yellow-400 text-sm font-medium"
+                  >
+                    {item}
+                  </p>
+                ))
+              ) : (
+                <p className="text-gray-400 text-sm">No activity yet</p>
+              )}
+              {typingAlert.map((item, index) => (
+                <p key={index} className="text-gray-300 text-sm font-semibold">
+                  {item.message}
+                </p>
+              ))}
+            </div>
+          </div>
+
+          {/* File Upload Section */}
+          <div className="bg-zinc-700/60 backdrop-blur-md rounded-2xl p-5 shadow-lg flex-shrink-0">
+            <h2 className="text-white text-lg font-semibold mb-3 border-b border-zinc-600 pb-2">
+              Share File
+            </h2>
+            <div className="space-y-3">
+              <div>
+                <input
+                  type="file"
+                  onChange={handleFile}
+                  className="w-full h-12 bg-zinc-900 border border-zinc-700 text-gray-300 rounded-lg px-3 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                />
+              </div>
+              <button
+                onClick={handleSendFile}
+                // disabled={!previewFiles}
+                className="w-full bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              >
+                Upload
+              </button>
+            </div>
+
+            {/* File Preview */}
+            {previewFiles && (
+              <div className="mt-4 pt-4 border-t border-zinc-600">
+                <p className="text-gray-300 text-sm mb-2">Preview:</p>
+                <img
+                  src={previewFiles || "/placeholder.svg"}
+                  className="w-full h-40 object-cover rounded-lg"
+                  alt="Preview"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Room Join Section */}
+          <div className="bg-zinc-700/60 backdrop-blur-md rounded-2xl p-5 shadow-lg flex-shrink-0">
+            <h2 className="text-white text-lg font-semibold mb-3 border-b border-zinc-600 pb-2">
+              Join Room
+            </h2>
+            <div className="flex gap-3">
+              <input
+                type="text"
+                value={roomId}
+                onChange={(e) => setRoomId(e.target.value)}
+                placeholder="Enter Room ID..."
+                className="flex-1 h-10 bg-zinc-900 border border-zinc-700 text-white rounded-lg px-3 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm"
+              />
+              <button
+                onClick={handleJoinRoomId}
+                className="bg-yellow-500 font-medium text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-all duration-300 text-sm"
+              >
+                Join
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side - Chat Section */}
+        <div className="flex-1 flex flex-col gap-6 overflow-hidden">
+          {/* Conversation Section */}
+          <div className="bg-zinc-700/60 backdrop-blur-md rounded-2xl p-5 shadow-lg flex-1 flex flex-col overflow-hidden">
+            <h2 className="text-white text-lg font-semibold mb-3 border-b border-zinc-600 pb-2 flex-shrink-0">
+              Conversation
+            </h2>
+            <div className="space-y-3 overflow-y-scroll max-h-[500px] flex-1">
+              {conversation.length > 0 ? (
+                conversation.map((item, index) => (
+                  <div
+                    key={index}
+                    className={`flex items-start gap-3 ${
+                      item.role === "You" ? "justify-end" : "justify-start"
+                    }`}
+                  >
+                    <span
+                      className={`px-4 py-2 rounded-xl max-w-xs flex gap-x-4 items-center ${
+                        item.role === "You"
+                          ? "bg-blue-600 text-white"
+                          : "bg-zinc-600 text-gray-200"
+                      }`}
+                    >
+                      <span className="block text-xs font-semibold opacity-75">
+                        {item.role}
+                      </span>
+                      <span className="block text-sm">{item.message}</span>
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-400 text-center py-8">
+                  No messages yet. Start chatting!
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Message Input Section */}
+          <div className="bg-zinc-700/60 backdrop-blur-md rounded-2xl p-5 shadow-lg flex-shrink-0">
+            <div className="flex gap-3">
+              <input
+                type="text"
+                value={message}
+                onKeyDown={handleEnter}
+                onChange={UserTypingAlert}
+                placeholder="Type your message..."
+                className="flex-1 h-12 bg-zinc-900 border border-zinc-700 text-white rounded-lg px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                onClick={sendMessage}
+                className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-all duration-300 font-medium"
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <Editor
+        setEditorContent={setEditorContent}
+        editorContent={editorContent}
       />
-      <button
-        onClick={handleJoinRoomId}
-        className="bg-yellow-500 font-medium text-white px-5 py-3 rounded-lg hover:bg-yellow-600 transition-all duration-300"
-      >
-        Join
-      </button>
     </div>
-
-    {/* Message Input */}
-    <div className="flex gap-3">
-      <input
-        type="text"
-        value={message}
-        onKeyDown={handleEnter}
-        onChange={UserTypingAlert}
-        placeholder="Type your message..."
-        className="h-12 flex-1 bg-zinc-900 border border-zinc-700 text-white rounded-lg px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-      <button
-        onClick={sendMessage}
-        className="bg-blue-500 text-white px-5 py-3 rounded-lg hover:bg-blue-600 transition-all duration-300"
-      >
-        Send
-      </button>
-    </div>
-
-    {/* File Upload */}
-    <div className="flex gap-3">
-      <input
-        type="file"
-        onChange={handleFile}
-        className="flex-1 h-12 bg-zinc-900 border border-zinc-700 text-gray-300 rounded-lg px-3 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
-      />
-      <button
-        onClick={handleSendFile}
-        className="bg-green-500 text-white px-5 py-3 rounded-lg hover:bg-green-600 transition-all duration-300"
-      >
-        Upload
-      </button>
-    </div>
-  </div>
-
-  {/* Preview Section */}
-  {previewFiles && (
-    <div className="fixed bottom-32 right-5 bg-zinc-800 p-3 rounded-xl shadow-xl border border-zinc-700">
-      <img
-        src={previewFiles}
-        className="w-40 h-40 object-cover rounded-lg"
-        alt="Preview"
-      />
-    </div>
-  )}
-</div>
-
   );
 };
 

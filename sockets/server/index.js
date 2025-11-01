@@ -25,6 +25,11 @@ io.on("connection", (socket)=>{
         socket.to(roomId).emit("receive-message", message);
     })
 
+    socket.on("editor-content-server", ({roomId, content})=>{
+        console.log(roomId, content)
+        socket.to(roomId).emit("editor-content-client", content);
+    })
+
     socket.on("disconnect", ()=>{
         counter.delete(socket.id)
         console.log("User disconnected:", {id: socket.id, count: counter.size});
