@@ -60,3 +60,29 @@ export const flashCardQuestions = [
       "A framework is a pre-built structure or set of tools that helps developers build applications faster, like React.js or Django.",
   },
 ];
+
+export const dropDownOptions = [
+  "HTML",
+  "CSS",
+  "JavaScript",
+  "React",
+  "Node.js",
+  "MongoDB",
+  "Express.js",
+  "Next.js",
+];
+
+export const routerConstant = [
+  {
+    id: 1,
+    path: "/flashcard",
+    title: "Flash Cards",
+    description: "Practice questions with flash card mode.",
+  },
+  {
+    id: 2,
+    path: "/dropdown",
+    title: "DropDown",
+    description: "Select all the carrier options.",
+  },
+];
