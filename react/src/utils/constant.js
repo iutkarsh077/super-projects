@@ -85,4 +85,10 @@ export const routerConstant = [
     title: "DropDown",
     description: "Select all the carrier options.",
   },
+  {
+    id: 3,
+    path: "/pomodoro",
+    title: "Pomodoro",
+    description: "Pomodoro Timer.",
+  },
 ];
