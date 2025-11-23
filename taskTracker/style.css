@@ -1,0 +1,52 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body{
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#title{
+    display: flex;
+    justify-content: center;
+    font-size: xx-large;
+    padding: 5px;
+    margin-bottom: 10px;
+}
+
+#main{
+    width: 50%;
+    height: 50%;
+    border: 3px solid black;
+    border-radius: 10px;
+}
+
+#upper{
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+#input-box{
+    width: 60%;
+    height: 40px;
+    border-radius: 10px;
+    border: 2px solid black;
+    padding-left: 5px;
+    font-size: large;
+}
+
+#header svg{
+    position: absolute;
+    top: 6px;
+    left: 75%;
+    z-index: 1000;
+    background-color: black;
+    color: white;
+}
