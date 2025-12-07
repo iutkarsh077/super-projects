@@ -1,4 +1,4 @@
-export function CreateBucket(capacity, refillPerSecond){
+export function createBucket(capacity, refillPerSecond){
     return {
         capacity,
         tokens: capacity,
@@ -7,20 +7,17 @@ export function CreateBucket(capacity, refillPerSecond){
     }
 }
 
-
-export function RefillToken(bucket){
-    const interval = (Date.now() - bucket.lastRefill) / 1000; //in seconds
-    console.log("Interval is: ", interval)
-    const tokenToRefill = interval * bucket.refillPerSecond;
-    bucket.tokens = Math.min(tokenToRefill + bucket.tokens, bucket.capacity);
-    bucket.lastRefill = Date.now();
+export function Refill(bucket){
+    const intervalInSec = (Date.now() - bucket.lastRefill) / 1000;
+    const addToken = intervalInSec * bucket.refillPerSecond;
+    bucket.tokens = Math.min(addToken + bucket.tokens, bucket.capacity);
 }
 
 export function tryAndRemove(bucket){
-    RefillToken(bucket);
+    Refill(bucket);
 
-    
-    if(bucket.tokens >= 1){
+    const tokenLeft = bucket.tokens;
+    if(tokenLeft >= 1){
         bucket.tokens = bucket.tokens - 1;
         return true;
     }
