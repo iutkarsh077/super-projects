@@ -1,8 +1,6 @@
-"use strict";
 // type hey = {
 //     name: "Utkarsh" | "Here"
 // }
-Object.defineProperty(exports, "__esModule", { value: true });
 let chai = {
     milk: 200,
     tea: "Taaza",
@@ -25,4 +23,5 @@ const thirdUser = {
 console.log(firstUser);
 console.log(secondUser);
 console.log(thirdUser);
+export {};
 //# sourceMappingURL=objects.js.map

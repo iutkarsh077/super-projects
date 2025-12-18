@@ -1,5 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 const nums = [1, 2, 3, 4, 5, 6, 67, 7, 8];
 const twoDArray = [
     ["Utkarsh", "John"],
@@ -18,4 +16,5 @@ var Wages;
     Wages[Wages["HIGH"] = 2] = "HIGH";
 })(Wages || (Wages = {}));
 console.log(Wages[2]);
+export {};
 //# sourceMappingURL=enumsArray.js.map

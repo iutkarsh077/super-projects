@@ -1,5 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 const addition = (p) => {
     return 6 * p;
 };
@@ -23,4 +21,5 @@ const Response = {
     }
 };
 console.log(Response);
+export {};
 //# sourceMappingURL=interfaces.js.map

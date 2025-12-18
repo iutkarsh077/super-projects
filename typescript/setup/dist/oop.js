@@ -1,5 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 var Wages;
 (function (Wages) {
     Wages[Wages["LOW"] = 0] = "LOW";
@@ -31,6 +29,7 @@ class User {
         })}`;
     }
 }
+export {};
 // const firstUser = new User("Utkarsh", 21, 10000);
 // console.log(firstUser.getSalary());
 //# sourceMappingURL=oop.js.map

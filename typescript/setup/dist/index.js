@@ -1,8 +1,6 @@
-"use strict";
 // function greet(name: string): string{
 //     return `Hello ${name}`
 // }
-Object.defineProperty(exports, "__esModule", { value: true });
 // console.log(greet("John wick"))
 // let myWorkStatus: 'success' | 'error' | 'half-done'  = "half-done";
 // console.log(myWorkStatus)
@@ -27,4 +25,5 @@ class OrderCoffee {
 }
 const firstOrder = new OrderCoffee();
 console.log(firstOrder);
+export {};
 //# sourceMappingURL=index.js.map
