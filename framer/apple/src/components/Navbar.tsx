@@ -17,9 +17,17 @@ const Navbar = () => {
   };
 
   return (
-    <div className="fixed w-full font-apple z-50">
-      <motion.div className="w-full h-10 bg-white/80 backdrop-blur-md flex justify-center">
-        <div className="w-full max-w-6xl flex items-center gap-x-9 h-full ">
+    <motion.div initial={{
+      y: -20,
+      opacity: 0
+    }} animate={{
+      y: 0,
+      opacity: 1
+    }} transition={{
+      duration: 0.4
+    }} className="fixed w-full font-apple z-50">
+      <motion.div className="w-full h-10 bg-white/80 backdrop-blur-md flex justify-center ml-28">
+        <div className="w-full max-w-6xl flex items-center justify-center gap-x-9 h-full ">
           <img
             src="/apple_assets/apple_logo.png"
             alt="logo"
@@ -75,7 +83,7 @@ const Navbar = () => {
                       {item.names.map((product, i) => (
                         <div
                           key={i}
-                          className={`text-gray-900 hover:text-blue-600 cursor-pointer transition-colors  ${item.id === 1 ? "text-2xl font-medium" : "text-[15px]font-normal "}`}
+                          className={`text-gray-900 hover:text-blue-600 cursor-pointer transition-colors  ${item.id === 1 ? "text-2xl font-medium" : "text-[12px] font-medium "}`}
                         >
                           {product}
                         </div>
@@ -88,7 +96,7 @@ const Navbar = () => {
           </>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 };
 

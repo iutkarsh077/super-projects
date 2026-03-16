@@ -1,9 +1,13 @@
+import Mac from "./components/Mac"
 import Navbar from "./components/Navbar"
 
 const App = () => {
   return (
-    <div className="font-apple h-[200vh]">
+    <div className="font-apple">
       <Navbar/>
+      <main>
+        <Mac/>
+      </main>
     </div>
   )
 }
