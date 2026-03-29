@@ -1,0 +1,20 @@
+{
+  "name": "agentsdk",
+  "version": "1.0.0",
+  "description": "",
+  "main": "first.js",
+  "scripts": {
+    "test": "node --watch first.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@openai/agents": "^0.8.1",
+    "axios": "^1.13.6",
+    "dotenv": "^17.3.1",
+    "nodemailer": "^8.0.4",
+    "zod": "^4.3.6"
+  }
+}
