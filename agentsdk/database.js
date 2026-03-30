@@ -126,7 +126,9 @@ async function main() {
         process.exit(0);
       }
 
-      const result = await run(dbAgent, query);
+      const result = await run(dbAgent, query, {
+        conversationId: process.env.CONV_ID
+      });
       console.log("🤖:", result.finalOutput);
     } catch (error) {
       console.log(error);
