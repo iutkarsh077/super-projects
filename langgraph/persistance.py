@@ -29,7 +29,7 @@ def QueryResolver(state: State):
                 "content": msg.content
         }]
     }
-    
+
 
 workflow= StateGraph(State)
 
