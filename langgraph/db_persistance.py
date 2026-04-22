@@ -108,10 +108,10 @@ def QueryResolver(state: State, config):
     }
     
 def RetrivalData(state: State, config):
-    print("Retrival data node start point")
+    # print("Retrival data node start point")
     threadId = config["configurable"]["thread_id"]
     user_query = state["messages"][-1]["content"]
-    print("user query is: ", user_query)
+    # print("user query is: ", user_query)
     thread_filter = Filter(
         must=[
             FieldCondition(
@@ -121,13 +121,13 @@ def RetrivalData(state: State, config):
         ]
     )
     try:
-        print("Retrival data node Try block")
+        # print("Retrival data node Try block")
         result = vector_store.similarity_search(
             query=user_query,
             k=5,
             filter=thread_filter
         )
-        print("Data from qdrant: ", result)
+        # print("Data from qdrant: ", result)
         if not result:
             print("Semantic search returned no matches. Falling back to thread scroll.")
             points, _ = qdrant_client.scroll(
@@ -143,10 +143,10 @@ def RetrivalData(state: State, config):
                 and point.payload.get("page_content")
                 and point.payload.get("metadata", {}).get("thread_id") == str(threadId)
             ]
-            print("Fallback data from qdrant: ", result)
+            # print("Fallback data from qdrant: ", result)
     except Exception as e:
-        print("Retrival data node except block")
-        print("Retrival error: ", e)
+        # print("Retrival data node except block")
+        # print("Retrival error: ", e)
         result = []
     
     if result and hasattr(result[0], "page_content"):
@@ -172,9 +172,10 @@ graph = workflow.compile()
 while True:
     threadId = input("From which thread you want to start: ")
     config = { "configurable": { "thread_id": threadId } }
-    query = input("Ask any question?")
+    query = input("Ask any question? ")
     if(query == "0"):
         break
     result = graph.invoke({"messages": [{"role": "user", "content": query}]},config=config)
-    print(result)
+    ans = result["messages"][-1]["content"]
+    print(ans)
     print("\n-----------------------------------------------------------------------------------\n")
