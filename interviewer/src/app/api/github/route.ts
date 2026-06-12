@@ -1,5 +1,6 @@
 "use server";
 
+import { prisma } from "@/lib/prisma";
 import { CheckGithubType, GitHubRepository } from "@/typeChecker/GithubChecker";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
@@ -27,8 +28,14 @@ export async function POST(req: NextRequest) {
 
         ))
 
+        const saveData = await prisma.interview.create({
+            data: {
+                githubMetaData: githubInfo
+            }
+        })
+
         return NextResponse.json(
-            { message: 'User created successfully', data: githubInfo },
+            { message: 'User created successfully', data: saveData.id },
             { status: 201 }
         );
     } catch (error) {

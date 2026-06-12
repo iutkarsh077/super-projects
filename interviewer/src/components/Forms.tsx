@@ -4,12 +4,15 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 const Forms = () => {
     const [githubUrl, setGithubUrl] = useState("");
+    const router = useRouter();
     const handleSubmit = async () => {
         try {
             const res = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL!}/api/github`, { githubUrl });
             console.log(res.data.data);
+            router.push(`/interview/${res.data.data}`);
         } catch (error) {
             console.log(error);
             toast.error("Failed to submit github link")
