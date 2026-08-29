@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import Child from "./Child";
 
 const Checkboxes = () => {
     const [checkboxes, setCheckboxes] = useState([
@@ -41,16 +42,18 @@ const Checkboxes = () => {
         <>
             <div className="ml-5 mt-5">
                 <div>
-                    <input type="checkbox" checked={isSelectedAll} disabled={isSelectedAll} onClick={() => handleSelectAll(!isSelectedAll)} />
+                    <input type="checkbox" checked={isSelectedAll} disabled={isSelectedAll} onChange={() => handleSelectAll(!isSelectedAll)} />
                     <span>Select All</span>
                 </div>
                 {checkboxes.map((item) => (
                     <div className="flex items-center gap-3" key={item.id}>
-                        <input type="checkbox" checked={item.checked} onClick={() => individualSelect(item.id)} />
+                        <input type="checkbox" checked={item.checked} onChange={() => individualSelect(item.id)} />
                         <span>{item.name}</span>
 
                     </div>
                 ))}
+
+                <Child isSelectedAll={isSelectedAll}/>
             </div>
         </>
     )

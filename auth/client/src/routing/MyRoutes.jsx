@@ -4,6 +4,7 @@ import Login from "../components/Login";
 import Dashboard from "../components/Dashboard";
 import ProtectedRoute from "./ProtectedRoute";
 import Checkboxes from "../components/Checkboxes";
+import UploadFiles from "../components/UploadFiles";
 
 const MyRoutes = () => {
     return (
@@ -11,6 +12,7 @@ const MyRoutes = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/checkbox" element={<Checkboxes />} />
+            <Route path="/files" element={<UploadFiles />} />
             <Route element={<ProtectedRoute />}>
                 <Route path="/" element={<Dashboard />} />
             </Route>
