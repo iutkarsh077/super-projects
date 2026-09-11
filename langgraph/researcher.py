@@ -7,12 +7,15 @@ from langchain_tavily import TavilySearch
 from typing import TypedDict, Annotated
 import operator
 import os
+from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.types import Command, interrupt
 
 load_dotenv()
 
 
 class State(TypedDict):
     messages: Annotated[list, operator.add]
+    approved: bool
 
 
 tavily_key = os.getenv("TAVILY_API_KEY")
@@ -22,7 +25,7 @@ tavily_tool = TavilySearch(max_results=5, topic="general")
 
 @tool
 def WebSearch(query: str):
-    """It Searchs on the internet and find relevent content"""
+    """Search the internet ONLY for current weather information.Use this tool only when the user explicitly asks about weather, temperature, forecast, rain, climate conditions, etc. Do NOT use it for general knowledge, people, history, news,or other questions."""
     result = tavily_tool.invoke(query)
 
     return result
@@ -38,34 +41,60 @@ def QueryResolverAgent(state: State):
     messages = state["messages"]
     response = llm_with_tools.invoke(messages)
 
+    print("MODEL RESPONSE:")
+    print(response)
+    print("TOOL CALLS:")
+    print(response.tool_calls)
+
     return {"messages": [response]}
+
+
+def ApprovalAgent(state: State):
+    get_approval = interrupt("Approve Web Search tool call ? ")
+
+    print("Get Approval is: ", get_approval)
+
+    if get_approval == True or get_approval == "yes" or get_approval == "y":
+        return Command(goto="tools")
+    return Command(goto=END)
 
 
 def shouldContinue(state: State):
     last_messages = state["messages"][-1]
 
     if last_messages.tool_calls:
-        return "tools"
+        return "approve_agent"
     return "end"
 
 
 graph = StateGraph(State)
 
 graph.add_node("query_resolver", QueryResolverAgent)
+graph.add_node("approve_agent", ApprovalAgent)
 graph.add_node("tools", ToolNode(all_tools))
 
 graph.add_edge(START, "query_resolver")
-graph.add_conditional_edges("query_resolver", shouldContinue, {"tools": "tools", "end": END})
+graph.add_conditional_edges(
+    "query_resolver", shouldContinue, {"approve_agent": "approve_agent", "end": END}
+)
+
 
 graph.add_edge("tools", "query_resolver")
 
-workflow = graph.compile()
+checkpointer = InMemorySaver()
+
+config = {"configurable": {"thread_id": "user-123"}}
+
+workflow = graph.compile(checkpointer=checkpointer)
 
 
 def main():
     query = input("What is your query? ")
-    result = workflow.invoke({"messages": [query]})
+    result = workflow.invoke({"messages": [query]}, config=config)
 
+    human_input = input("Would you like to call the web_search agent? ")
+
+    result = workflow.invoke(Command(resume=human_input), config)
     print(result["messages"][-1].content)
 
 
