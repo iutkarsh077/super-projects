@@ -96,15 +96,4 @@ graph.add_edge("tools", "query_resolver_agent")
 workflow = graph.compile()
 
 
-async def main():
-    result = await workflow.ainvoke(
-        {"messages": ["is there any user with email user22@example.com is there in my db, if yes then tell me when this user created and what is his password?"]}
-    )
 
-    print("\n\nfinal result is: ", result["messages"][-1].content, "\n\n")
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
-
-# print("\n\nfinal result is: ", result["messages"][-1].content, "\n\n")
