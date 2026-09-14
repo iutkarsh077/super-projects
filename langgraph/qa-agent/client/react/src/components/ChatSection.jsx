@@ -1,19 +1,50 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import api from "../helpers/api";
 import Markdown from "react-markdown";
-
-const messages = [
-    { id: 1, sender: "user", text: "Can you explain what LangGraph is?" },
-    { id: 2, sender: "assistant", text: "LangGraph is a library for building applications that use stateful, multi-step AI workflows." },
-    { id: 3, sender: "user", text: "What is a good first project to build with it?" },
-    { id: 4, sender: "assistant", text: "A question-answering assistant is a great place to start. You can add tools and memory later." },
-];
+import { useDispatch, useSelector } from "react-redux";
+import { addCurrentChatSession } from "../features/UserSlices";
+import { useNavigate } from "react-router-dom";
 
 const ChatSection = () => {
-    const [userMessages, setUserMessages] = useState(messages);
+    const [userMessages, setUserMessages] = useState([]);
     const [currentText, setCurrentText] = useState("");
     const bottomRef = useRef(null);
+    const data = useSelector((state) => state.user.user);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const currentChatSession = useSelector(
+        (state) => state.user?.currentChatSessionId
+    );
+    
+    const url = window.location.href;
+    const sessionId = currentChatSession;
+
+    const { data: messages, isLoading, isSuccess } = useQuery({
+        queryKey: ["chatMessages", sessionId],
+        queryFn: async () => {
+            const response = await api.get(`/getchats/${sessionId}`);
+            return response.data;
+        },
+
+        enabled: !!sessionId,
+    })
+
+    useEffect(() => {
+        if (isSuccess) {
+            setUserMessages(messages.data);
+            console.log("messages: ", messages)
+        }
+    }, [isSuccess, data]);
+
+    useEffect(() => {
+        const urlParts = url.split("=")
+        dispatch(addCurrentChatSession({ id: urlParts?.[1] || null }));
+
+        if(urlParts?.length < 2){
+            setUserMessages([])
+        }
+    }, [url])
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView({
@@ -22,33 +53,37 @@ const ChatSection = () => {
     }, [userMessages]);
 
     const sendMessageMutation = useMutation({
-        mutationFn: (text) => api.post("/querynode", { query: text }),
+        mutationFn: (text) => api.post("/querynode", { query: text, userId: data?.id, chatSessionId: sessionId || null }),
         onSuccess: ({ data }) => {
             console.log("The response data is: ", data);
             setUserMessages((prev) => [
                 ...prev,
                 {
-                    id: prev.length > 0 ? prev[prev.length - 1].id + 1 : 1,
-                    sender: "assistant",
-                    text: data.data
+                    _id: Date.now(),
+                    role: "assistant",
+                    content: data.data
                 }
             ])
             setCurrentText("");
+            dispatch(addCurrentChatSession({ id: data.chatSessionId }))
+            navigate(`?session=${data.chatSessionId}`, { replace: true })
         }
     })
     const handleSendMessage = (e) => {
-        event.preventDefault();
+        e.preventDefault();
 
         if (!currentText.trim()) return;
 
         setUserMessages((prev) => [
             ...prev,
             {
-                id: prev.length > 0 ? prev[prev.length - 1].id + 1 : 1,
-                sender: "user",
-                text: currentText
+                _id: Date.now(),
+                role: "user",
+                content: currentText
             }
         ])
+
+        console.log("data session is: ", sessionId)
         sendMessageMutation.mutate(currentText);
     }
     return (
@@ -60,12 +95,12 @@ const ChatSection = () => {
 
             <div className="flex-1 space-y-5 overflow-y-auto px-4 py-6 sm:px-8">
                 {userMessages.map((message) => (
-                    <div key={message.id} className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}>
-                        <div className={`max-w-xl rounded-2xl px-4 py-3 text-sm leading-6 ${message.sender === "user"
+                    <div key={message._id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                        <div className={`max-w-xl rounded-2xl px-4 py-3 text-sm leading-6 ${message.role === "user"
                             ? "rounded-br-md bg-black text-white"
                             : "rounded-bl-md bg-white text-gray-800 shadow-sm ring-1 ring-gray-200"
                             }`}>
-                            <Markdown>{message.text}</Markdown>
+                            <Markdown>{message.content}</Markdown>
                         </div>
 
                         <div ref={bottomRef} />
