@@ -13,14 +13,16 @@ app.use(cors({
     credentials: true,
 }))
 
+
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api/v1", router);
 const port = process.env.PORT
 
+
 const startServer = async () => {
     await DbConnect();
-    app.listen(port || 3000, ()=>{
+    app.listen(port || 3000, () => {
         console.log(`Server is running at port ${port || 3000}`)
     })
 };

@@ -5,14 +5,15 @@ import Markdown from "react-markdown";
 import { useDispatch, useSelector } from "react-redux";
 import { addCurrentChatSession } from "../features/UserSlices";
 import { useNavigate } from "react-router-dom";
+import UploadFiles from "./UploadFiles";
 
 const ChatSection = () => {
     const [userMessages, setUserMessages] = useState([]);
     const [currentText, setCurrentText] = useState("");
     const bottomRef = useRef(null);
-    const data = useSelector((state) => state.user.user);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const data = useSelector((state) => state.user.user);
     const currentChatSession = useSelector(
         (state) => state.user?.currentChatSessionId
     );
@@ -110,7 +111,8 @@ const ChatSection = () => {
 
             <form onSubmit={handleSendMessage} className="border-t border-gray-200 bg-white p-4 sm:px-8">
                 <label htmlFor="message" className="sr-only">Message</label>
-                <div className="flex gap-3">
+                <div className="flex gap-3 ">
+                    <UploadFiles/>
                     <input id="message" value={currentText} type="text" placeholder="Type a message..." onChange={(e) => setCurrentText(e.target.value)} className="min-w-0 flex-1 rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black" />
                     <button type="button" className="rounded-lg bg-black px-5 py-3 text-sm font-medium text-white hover:bg-gray-800">Send</button>
                 </div>

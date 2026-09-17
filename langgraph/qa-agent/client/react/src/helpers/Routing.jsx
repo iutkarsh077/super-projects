@@ -12,6 +12,7 @@ const Routing = () => {
             <Route element={<App/>} path="/">
                 <Route index={true} element={<ProtectedHome />} />
                 <Route path="/login" element={<Auth/>}/>
+                <Route path="/raggy" element={<Auth/>}/>
             </Route>
         </Routes>
     )

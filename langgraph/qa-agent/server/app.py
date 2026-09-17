@@ -47,7 +47,7 @@ async def ResolveUserQuery(payload: QueryRequest):
 
     print("\nRelated data is: ", docs, "\n\n")
 
-    result = await workflow.ainvoke({"messages": [str(payload.question)]})
+    result = await workflow.ainvoke({"messages": [str(payload.question), str(docs["queryRelatedInfo"])]})
 
     finalAnswer = result["messages"][-1].content
 
