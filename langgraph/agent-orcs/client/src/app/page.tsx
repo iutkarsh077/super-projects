@@ -1,9 +1,5 @@
-import ChatSection from "@/components/Chat";
+import AppBuilder from "@/components/AppBuilder";
 
 export default function Home() {
-  return (
-   <>
-    <ChatSection/>
-   </>
-  );
+  return <AppBuilder />;
 }

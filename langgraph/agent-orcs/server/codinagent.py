@@ -3,12 +3,15 @@ from typing import TypedDict, Annotated
 from dotenv import load_dotenv
 import operator
 import os
+from contextvars import ContextVar
 
 from langchain_openai import ChatOpenAI
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
 
 load_dotenv()
+
+workspace_ctx: ContextVar[str] = ContextVar("workspace", default=os.getcwd())
 
 
 class State(TypedDict):
@@ -17,42 +20,58 @@ class State(TypedDict):
 
 llm = ChatOpenAI(model="gpt-5.4-mini")
 
+HTML_CSS_JS_STACK = """
+TECH STACK (mandatory for every project):
+- Always build a static web app using HTML, CSS, and JavaScript only.
+- Do NOT use React, Vue, Angular, Next.js, build tools, or backend/server code unless the user explicitly overrides this (they will not).
+- Use plain .html, .css, and .js files (organize CSS/JS in folders like css/ and js/ when helpful).
+- Load third-party libraries from a CDN in index.html when needed (e.g. marked.js, chart.js).
+- The app must open in a browser via index.html with no compile step.
+"""
+
+
+def _resolve_path(path: str) -> str:
+    if not path:
+        return workspace_ctx.get()
+    normalized = path.replace("\\", "/")
+    if os.path.isabs(normalized):
+        return os.path.normpath(normalized)
+    return os.path.normpath(os.path.join(workspace_ctx.get(), normalized))
+
 
 def CreateDirectory(directoryName):
-    os.makedirs(directoryName, exist_ok=True)
-    return f"Created directory: {directoryName}"
+    target = _resolve_path(directoryName)
+    os.makedirs(target, exist_ok=True)
+    return f"Created directory: {target}"
 
 
 def CreateFile(directoryName, fileName):
-    os.makedirs(directoryName, exist_ok=True)
-
-    filePath = os.path.join(directoryName, fileName)
-
+    directory = _resolve_path(directoryName)
+    os.makedirs(directory, exist_ok=True)
+    filePath = os.path.join(directory, fileName)
     with open(filePath, "w", encoding="utf-8") as f:
         pass
-
     return f"Created file: {filePath}"
 
 
 def ReadFile(filePath):
-    with open(filePath, "rt", encoding="utf-8") as file:
+    target = _resolve_path(filePath)
+    with open(target, "rt", encoding="utf-8") as file:
         return file.read()
 
 
 def WriteFile(filePath, data):
-    directory = os.path.dirname(filePath)
-
+    target = _resolve_path(filePath)
+    directory = os.path.dirname(target)
     if directory:
         os.makedirs(directory, exist_ok=True)
-
-    with open(filePath, "w", encoding="utf-8") as file:
+    with open(target, "w", encoding="utf-8") as file:
         file.write(data)
-
-    return f"File written successfully: {filePath}"
+    return f"File written successfully: {target}"
 
 
 def GetCurrentDirectory():
-    return os.getcwd()
+    return workspace_ctx.get()
 
 
 @tool
@@ -93,12 +112,10 @@ all_tools = [
     GetCurrentDirectoryTool,
 ]
 
-
 planningLLM = llm.bind_tools(all_tools)
 
 
 def PlanningAgent(state: State):
-
     response = planningLLM.invoke(
         [
             {
@@ -118,52 +135,43 @@ You should decide:
 5. What each file should contain
 6. Implementation steps
 
+{HTML_CSS_JS_STACK}
+
 IMPORTANT:
 You are ONLY responsible for creating the plan.
 
 Do NOT implement the project.
 Do NOT write code into files.
-""",
+Always plan for HTML, CSS, and JavaScript only—never another stack.
+""".format(HTML_CSS_JS_STACK=HTML_CSS_JS_STACK),
             },
             *state["messages"],
         ]
     )
-
     return {"messages": [response]}
 
 
 def ShouldPlanningContinue(state: State):
-
     last_message = state["messages"][-1]
-
     if last_message.tool_calls:
         return "tools"
-
     return "end"
 
 
 planningGraph = StateGraph(State)
-
 planningGraph.add_node("planningAgent", PlanningAgent)
-
 planningGraph.add_node("planningTools", ToolNode(all_tools))
-
 planningGraph.add_edge(START, "planningAgent")
-
 planningGraph.add_conditional_edges(
     "planningAgent", ShouldPlanningContinue, {"tools": "planningTools", "end": END}
 )
-
 planningGraph.add_edge("planningTools", "planningAgent")
-
 planningWorkflow = planningGraph.compile()
-
 
 codingLLM = llm.bind_tools(all_tools)
 
 
 def CodingAgent(state: State):
-
     response = codingLLM.invoke(
         [
             {
@@ -194,83 +202,69 @@ IMPORTANT:
 - You MUST use the filesystem tools.
 - Create the files and write the code into them.
 - If a file already exists, read it before modifying it.
-""",
+- Put the main entry file at index.html in the workspace root.
+- Use relative paths only; stay inside the current working directory.
+
+{HTML_CSS_JS_STACK}
+
+You MUST implement using HTML, CSS, and JavaScript files only. Never create package.json, frameworks, or server code.
+""".format(HTML_CSS_JS_STACK=HTML_CSS_JS_STACK),
             },
             *state["messages"],
         ]
     )
-
     return {"messages": [response]}
 
 
 def ShouldCodingContinue(state: State):
-
     last_message = state["messages"][-1]
-
     if last_message.tool_calls:
         return "tools"
-
     return "end"
 
 
 codingGraph = StateGraph(State)
-
 codingGraph.add_node("codingAgent", CodingAgent)
-
 codingGraph.add_node("codingTools", ToolNode(all_tools))
-
 codingGraph.add_edge(START, "codingAgent")
-
 codingGraph.add_conditional_edges(
     "codingAgent", ShouldCodingContinue, {"tools": "codingTools", "end": END}
 )
-
 codingGraph.add_edge("codingTools", "codingAgent")
-
 codingWorkflow = codingGraph.compile()
 
 
-user_query = """
-Create a markdown editor using HTML, CSS and JavaScript.
-
-The app should have:
-
-- Markdown editor
-- Live preview of the Markdown
-- Support headings, bold, italic, links, images, lists, code blocks and blockquotes
-- Toolbar for common Markdown formatting
-- Word count and character count
-- Copy Markdown button
-- Download Markdown as a .md file
-- Clear editor button
-- Save content automatically using localStorage
-- Restore saved content when the app is reopened
-- Responsive and clean UI
-
-Use marked.js from a CDN for Markdown parsing.
-
-Create an appropriate file and folder structure.
-"""
+def _set_workspace(workspace: str):
+    return workspace_ctx.set(os.path.abspath(workspace))
 
 
-planningResult = planningWorkflow.invoke(
-    {"messages": [{"role": "user", "content": user_query}]}
-)
-
-
-plan = planningResult["messages"][-1].content
-
-
-print("\n================ PLAN ================\n")
-print(plan)
-
-
-codingResult = codingWorkflow.invoke(
-    {
-        "messages": [
+def run_planning(user_query: str, workspace: str) -> str:
+    token = _set_workspace(workspace)
+    try:
+        planning_result = planningWorkflow.invoke(
             {
-                "role": "user",
-                "content": f"""
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": f"{user_query.strip()}\n\n{HTML_CSS_JS_STACK}",
+                    }
+                ]
+            }
+        )
+        return planning_result["messages"][-1].content or ""
+    finally:
+        workspace_ctx.reset(token)
+
+
+def run_coding(user_query: str, plan: str, workspace: str) -> str:
+    token = _set_workspace(workspace)
+    try:
+        coding_result = codingWorkflow.invoke(
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": f"""
 The user requested:
 
 {user_query}
@@ -287,12 +281,55 @@ Now implement this plan.
 
 Actually create the folders and files
 and write the complete code into them.
+
+{HTML_CSS_JS_STACK}
 """,
+                    }
+                ]
             }
-        ]
-    }
-)
+        )
+        return coding_result["messages"][-1].content or ""
+    finally:
+        workspace_ctx.reset(token)
 
 
-print("\n================ CODING AGENT ================\n")
-print(codingResult["messages"][-1].content)
+def find_entry_html(workspace: str) -> str | None:
+    workspace = os.path.abspath(workspace)
+    preferred = os.path.join(workspace, "index.html")
+    if os.path.isfile(preferred):
+        return "index.html"
+
+    for root, _, files in os.walk(workspace):
+        if "index.html" in files:
+            full = os.path.join(root, "index.html")
+            rel = os.path.relpath(full, workspace).replace("\\", "/")
+            return rel
+    return None
+
+
+def list_workspace_files(workspace: str) -> list[str]:
+    workspace = os.path.abspath(workspace)
+    paths: list[str] = []
+    for root, _, files in os.walk(workspace):
+        for name in files:
+            full = os.path.join(root, name)
+            rel = os.path.relpath(full, workspace).replace("\\", "/")
+            paths.append(rel)
+    return sorted(paths)
+
+
+if __name__ == "__main__":
+    demo_query = """
+Create a markdown editor using HTML, CSS and JavaScript.
+
+The app should have live preview, toolbar, localStorage autosave, and a clean UI.
+Use marked.js from a CDN. Create an appropriate file and folder structure.
+"""
+    demo_workspace = os.path.join(os.getcwd(), "_demo_build")
+    os.makedirs(demo_workspace, exist_ok=True)
+    plan = run_planning(demo_query, demo_workspace)
+    print("\n================ PLAN ================\n")
+    print(plan)
+    summary = run_coding(demo_query, plan, demo_workspace)
+    print("\n================ CODING AGENT ================\n")
+    print(summary)

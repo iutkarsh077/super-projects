@@ -7,3 +7,5 @@ __pycache__
 _pycache_
 
 .venv/
+generated/
+_demo_build/
