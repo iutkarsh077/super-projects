@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Todo App</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="todo-app" aria-labelledby="app-title">
+      <header class="app-header">
+        <p class="app-kicker">Simple productivity</p>
+        <h1 id="app-title">Todo App</h1>
+        <p class="app-subtitle">Add tasks, mark them complete, and keep your list organized.</p>
+      </header>
+
+      <form id="todo-form" class="todo-form" autocomplete="off">
+        <label class="sr-only" for="todo-input">New todo</label>
+        <input
+          id="todo-input"
+          name="todo"
+          type="text"
+          placeholder="What do you need to do?"
+          maxlength="120"
+        />
+        <button type="submit" class="btn btn-primary">Add Todo</button>
+      </form>
+
+      <div class="todo-meta" aria-live="polite">
+        <span id="todo-count">0 todos</span>
+        <button type="button" id="clear-completed" class="btn btn-secondary">Clear Completed</button>
+      </div>
+
+      <ul id="todo-list" class="todo-list" aria-label="Todo items"></ul>
+      <p id="empty-state" class="empty-state">No todos yet. Add one above to get started.</p>
+    </section>
+  </main>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
