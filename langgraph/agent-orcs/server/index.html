@@ -3,40 +3,65 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Todo App</title>
+  <meta name="description" content="A clean, responsive Markdown editor with live preview, localStorage autosave, and export tools." />
+  <title>Markdown Editor</title>
   <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
+  <script src="js/app.js" defer></script>
 </head>
 <body>
-  <main class="app-shell">
-    <section class="todo-app" aria-labelledby="app-title">
-      <header class="app-header">
-        <p class="app-kicker">Simple productivity</p>
-        <h1 id="app-title">Todo App</h1>
-        <p class="app-subtitle">Add tasks, mark them complete, and keep your list organized.</p>
-      </header>
-
-      <form id="todo-form" class="todo-form" autocomplete="off">
-        <label class="sr-only" for="todo-input">New todo</label>
-        <input
-          id="todo-input"
-          name="todo"
-          type="text"
-          placeholder="What do you need to do?"
-          maxlength="120"
-        />
-        <button type="submit" class="btn btn-primary">Add Todo</button>
-      </form>
-
-      <div class="todo-meta" aria-live="polite">
-        <span id="todo-count">0 todos</span>
-        <button type="button" id="clear-completed" class="btn btn-secondary">Clear Completed</button>
+  <div class="app-shell">
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Static Markdown Studio</p>
+        <h1>Markdown Editor</h1>
+        <p class="subtitle">Write Markdown on the left and preview rendered output on the right.</p>
       </div>
+      <div class="status-pill" id="saveStatus" aria-live="polite">Saved locally</div>
+    </header>
 
-      <ul id="todo-list" class="todo-list" aria-label="Todo items"></ul>
-      <p id="empty-state" class="empty-state">No todos yet. Add one above to get started.</p>
+    <section class="toolbar" aria-label="Markdown formatting toolbar">
+      <button type="button" class="toolbar-btn" data-action="heading1">H1</button>
+      <button type="button" class="toolbar-btn" data-action="heading2">H2</button>
+      <button type="button" class="toolbar-btn" data-action="bold"><strong>B</strong></button>
+      <button type="button" class="toolbar-btn" data-action="italic"><em>I</em></button>
+      <button type="button" class="toolbar-btn" data-action="link">Link</button>
+      <button type="button" class="toolbar-btn" data-action="image">Image</button>
+      <button type="button" class="toolbar-btn" data-action="unordered-list">List</button>
+      <button type="button" class="toolbar-btn" data-action="ordered-list">1. List</button>
+      <button type="button" class="toolbar-btn" data-action="code-block">Code</button>
+      <button type="button" class="toolbar-btn" data-action="blockquote">Quote</button>
     </section>
-  </main>
 
-  <script src="js/app.js"></script>
+    <main class="workspace">
+      <section class="panel editor-panel" aria-label="Markdown editor">
+        <div class="panel-header">
+          <h2>Editor</h2>
+          <span class="panel-hint">Autosaves to your browser</span>
+        </div>
+        <textarea id="markdownInput" spellcheck="false" aria-label="Markdown input"></textarea>
+      </section>
+
+      <section class="panel preview-panel" aria-label="Live preview">
+        <div class="panel-header">
+          <h2>Preview</h2>
+          <span class="panel-hint">Rendered with marked.js</span>
+        </div>
+        <div id="preview" class="preview-content"></div>
+      </section>
+    </main>
+
+    <footer class="bottom-bar">
+      <div class="stats" aria-label="Document statistics">
+        <span><strong id="wordCount">0</strong> words</span>
+        <span><strong id="charCount">0</strong> characters</span>
+      </div>
+      <div class="actions">
+        <button type="button" class="action-btn secondary" id="copyBtn">Copy Markdown</button>
+        <button type="button" class="action-btn secondary" id="downloadBtn">Download .md</button>
+        <button type="button" class="action-btn danger" id="clearBtn">Clear editor</button>
+      </div>
+    </footer>
+  </div>
 </body>
 </html>

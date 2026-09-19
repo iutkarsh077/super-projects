@@ -231,15 +231,23 @@ codingWorkflow = codingGraph.compile()
 
 
 user_query = """
-Create a todo app using HTML, CSS and JavaScript.
+Create a markdown editor using HTML, CSS and JavaScript.
 
 The app should have:
 
-- Add todo
-- Delete todo
-- Mark todo as completed
-- Display all todos
-- Clean UI
+- Markdown editor
+- Live preview of the Markdown
+- Support headings, bold, italic, links, images, lists, code blocks and blockquotes
+- Toolbar for common Markdown formatting
+- Word count and character count
+- Copy Markdown button
+- Download Markdown as a .md file
+- Clear editor button
+- Save content automatically using localStorage
+- Restore saved content when the app is reopened
+- Responsive and clean UI
+
+Use marked.js from a CDN for Markdown parsing.
 
 Create an appropriate file and folder structure.
 """

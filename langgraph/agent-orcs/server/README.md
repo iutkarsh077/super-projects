@@ -1,44 +1,22 @@
-# Todo App
+# Markdown Editor
 
-A clean and responsive Todo App built with HTML, CSS, and JavaScript.
+A responsive static Markdown editor built with HTML, CSS, and JavaScript.
 
 ## Features
+- Live Markdown preview with `marked.js`
+- Toolbar for common Markdown formatting
+- Word and character counts
+- Copy Markdown to clipboard
+- Download content as a `.md` file
+- Clear editor button
+- Automatic save with `localStorage`
+- Restore saved content on reload
+- Clean, responsive UI
 
-- Add todo
-- Delete todo
-- Mark todo as completed
-- Display all todos
-- Clean UI
-- Saves todos in LocalStorage
+## Files
+- `index.html`
+- `css/styles.css`
+- `js/app.js`
 
-## Folder Structure
-
-```text
-todo-app/
-├── index.html
-├── css/
-│   └── styles.css
-├── js/
-│   └── app.js
-├── assets/
-└── README.md
-```
-
-## How to Run
-
-1. Open `index.html` in your browser.
-2. Add todos using the input field and button.
-3. Click the checkbox to mark a todo as completed.
-4. Click delete to remove a todo.
-
-## Notes
-
-- Todos are persisted in the browser using LocalStorage.
-- The UI is responsive and works well on mobile devices.
-
-## Future Improvements
-
-- Edit todo items
-- Filter all / active / completed
-- Add dark mode
-- Drag and drop reordering
+## Usage
+Open `index.html` in a browser. Content is saved automatically in your browser storage.
