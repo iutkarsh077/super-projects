@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "Jev AI Slop Detector",
+  "version": "1.0.0",
+  "description": "Detect AI slop on X using Jev.",
+
+  "permissions": [
+    "storage"
+  ],
+
+  "host_permissions": [
+    "https://x.com/*",
+    "https://twitter.com/*",
+    "http://localhost:5000/*"
+  ],
+
+  "action": {
+    "default_title": "Jev AI Slop Detector",
+    "default_popup": "index.html"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://x.com/*",
+        "https://twitter.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
