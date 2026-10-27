@@ -5,6 +5,7 @@ import Dashboard from "../components/Dashboard";
 import ProtectedRoute from "./ProtectedRoute";
 import Checkboxes from "../components/Checkboxes";
 import UploadFiles from "../components/UploadFiles";
+import MediaAccess from "../components/MediaAccess";
 
 const MyRoutes = () => {
     return (
@@ -13,6 +14,7 @@ const MyRoutes = () => {
             <Route path="/signup" element={<Signup />} />
             <Route path="/checkbox" element={<Checkboxes />} />
             <Route path="/files" element={<UploadFiles />} />
+            <Route path="/media" element={<MediaAccess />} />
             <Route element={<ProtectedRoute />}>
                 <Route path="/" element={<Dashboard />} />
             </Route>
