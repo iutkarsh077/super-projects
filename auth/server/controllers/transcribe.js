@@ -1,28 +1,35 @@
-import "dotenv/config";
-import { OpenAI } from "openai";
 import fs from "fs";
+import { unlink } from "node:fs/promises";
+import { OpenAI } from "openai";
+import "dotenv/config";
 
-const openai = new OpenAI();
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+});
 
-async function transcription() {
-  try {
-    const filePath = "./freesound_community-speech-94649.mp3";
-
-    if (!fs.existsSync(filePath)) {
-      throw new Error(`Audio file not found: ${filePath}`);
+async function transcription(req, res) {
+    if (!req.file) {
+        return res.status(400).json({
+            message: "Audio file is required",
+        });
     }
 
-    const res = await openai.audio.transcriptions.create({
-      file: fs.createReadStream(filePath),
-      model: "gpt-4o-transcribe-diarize",
-      response_format: "diarized_json",
-    });
+    try {
+        const result = await openai.audio.transcriptions.create({
+            file: fs.createReadStream(req.file.path),
+            model: "gpt-4o-transcribe",
+        });
 
-    console.log("Transcript:", JSON.stringify(res.text));
-  } catch (error) {
-    console.error("Error:", error.message);
-  }
+        return res.json({ text: result.text });
+    } catch (error) {
+        console.error("Transcription error:", error);
+
+        return res.status(500).json({
+            message: "Audio transcription failed",
+        });
+    } finally {
+        await unlink(req.file.path).catch(() => {});
+    }
 }
 
-
-transcription()
+export default transcription;
