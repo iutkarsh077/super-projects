@@ -8,12 +8,14 @@ import TokenBucketRateLimit from "./libs/tokenbucket.js";
 import multer from "multer";
 import fs from "fs";
 import transcription from "./controllers/transcribe.js";
+import TextToSpeech from "./controllers/tts.js";
 dotenv.config();
 
 
 const app = e();
 app.use(e.json());
 app.use(cookieParser());
+app.use(e.json());
 
 fs.mkdirSync("uploads", { recursive: true });
 
@@ -38,6 +40,8 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
 }))
 app.use(TokenBucketRateLimit)
+
+app.post("/tts", TextToSpeech)
 app.use("/audio", uploads.single("audio"), transcription)
 app.use("/", route)
 

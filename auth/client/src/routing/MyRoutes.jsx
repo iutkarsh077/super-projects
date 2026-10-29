@@ -7,6 +7,7 @@ import Checkboxes from "../components/Checkboxes";
 import UploadFiles from "../components/UploadFiles";
 import MediaAccess from "../components/MediaAccess2";
 import RecordingMedia from "../components/Recording";
+import TextToSpeech from "../components/texttospeech";
 
 const MyRoutes = () => {
     return (
@@ -17,6 +18,7 @@ const MyRoutes = () => {
             <Route path="/files" element={<UploadFiles />} />
             <Route path="/media" element={<MediaAccess />} />
             <Route path="/recording" element={<RecordingMedia />} />
+            <Route path="/tts" element={<TextToSpeech />} />
             <Route element={<ProtectedRoute />}>
                 <Route path="/" element={<Dashboard />} />
             </Route>
