@@ -17,8 +17,6 @@ const TextToSpeech = async (req, res) => {
         if (!text?.trim()) {
             return res.status(400).json({ message: "Text is required", status: false });
         }
-        const speechFile = path.resolve("./speech.mp3");
-
         const mp3 = await openai.audio.speech.create({
             model: "gpt-4o-mini-tts",
             voice: "coral",
@@ -27,7 +25,6 @@ const TextToSpeech = async (req, res) => {
         });
 
         const buffer = Buffer.from(await mp3.arrayBuffer());
-        // await fs.promises.writeFile(speechFile, buffer);
 
         return res
             .status(200)

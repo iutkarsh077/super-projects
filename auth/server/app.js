@@ -9,6 +9,7 @@ import multer from "multer";
 import fs from "fs";
 import transcription from "./controllers/transcribe.js";
 import TextToSpeech from "./controllers/tts.js";
+import VoiceAgent from "./controllers/voiceagent.js";
 dotenv.config();
 
 
@@ -42,6 +43,7 @@ app.use(cors({
 app.use(TokenBucketRateLimit)
 
 app.post("/tts", TextToSpeech)
+app.post("/voiceagent", uploads.single("audio"), VoiceAgent)
 app.use("/audio", uploads.single("audio"), transcription)
 app.use("/", route)
 
