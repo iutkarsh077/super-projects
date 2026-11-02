@@ -48,7 +48,7 @@ app.use("/audio", uploads.single("audio"), transcription)
 app.use("/", route)
 
 DbConnect().then(() => {
-    app.listen(3000, () => {
+    app.listen(4000, () => {
         console.log(`Server is listening at port 3000`)
     })
 }).catch((error) => {
