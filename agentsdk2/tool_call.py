@@ -7,7 +7,7 @@ load_dotenv()
 client = OpenAI()
 
 
-messages = [{"role": "user", "content": "What is the tempurtaure in london?"}]
+messages = [{"role": "user", "content": "What is the tempurtaure in london and delhi?"}]
 
 
 def get_tempurature(city: str):
@@ -29,23 +29,23 @@ tools = [
     }
 ]
 
-response = client.responses.create(model="gpt-5.4-mini", input=messages, tools=tools)
 
-print(response.output)
 
-for item in response.output:
-    if item.type == "function_call" and item.name == "get_tempurature":
-        args = json.loads(item.arguments)
-        result = get_tempurature(args["city"])
-        messages += response.output
-        messages.append(
-            {
+while True:
+    response = client.responses.create(model="gpt-5.4-mini", input=messages, tools=tools)
+    messages += response.output
+
+    calls = [item for item in response.output if item.type == "function_call"]
+    if not calls:
+        break   
+    for item in calls:
+        if item.name == "get_tempurature":
+            args = json.loads(item.arguments)
+            result = get_tempurature(args["city"])
+            messages.append({
                 "type": "function_call_output",
                 "call_id": item.call_id,
                 "output": str(result),
-            }
-        )
-        response = client.responses.create(model="gpt-5.4-mini", input=messages, tools=tools)
-
-
+            })
+   
 print(response.output_text)
