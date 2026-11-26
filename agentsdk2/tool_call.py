@@ -34,8 +34,12 @@ tools = [
 while True:
     response = client.responses.create(model="gpt-5.4-mini", input=messages, tools=tools)
     messages += response.output
+    
+    calls = []
 
-    calls = [item for item in response.output if item.type == "function_call"]
+    for item in response.output:
+        if item.type == "function_call":
+            calls.append(item)
     if not calls:
         break   
     for item in calls:
